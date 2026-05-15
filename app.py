@@ -1,131 +1,58 @@
-# ==========================================
-# PREVISÃO DE NOTAS COM SCIKIT-LEARN
-# STREAMLIT + PLOTLY
-# ==========================================
-
-# Bibliotecas
 import pandas as pd
-import streamlit as st
-import plotly.express as px
-
 from sklearn.linear_model import LinearRegression
+import plotly.express as px
+import numpy as np
 
-# ==========================================
-# 1. CONJUNTO DE DADOS
-# ==========================================
-
-estudos = pd.DataFrame({
-    'notas': [1, 2, 4, 6, 8, 10],
-    'horas': [2, 4, 5, 7, 9, 10]
+# 1. Dataset
+gamer = pd.DataFrame({
+    'horas_jogo': [1, 2, 4, 6, 8, 10],
+    'cansaco': [1, 2, 3, 5, 8, 10]
 })
 
-# ==========================================
-# 2. VARIÁVEIS
-# ==========================================
+# 2. Variável independente (X) e dependente (y)
+X = gamer[['horas_jogo']]
+y = gamer['cansaco']
 
-# Variável independente
-X = estudos[['horas']]
-
-# Variável dependente
-y = estudos['notas']
-
-# ==========================================
-# 3. CRIAÇÃO DO MODELO
-# ==========================================
-
+# 3. Criação do modelo
 modelo = LinearRegression()
 
-# Treinamento do modelo
+# 4. Treinamento
 modelo.fit(X, y)
 
-# ==========================================
-# 4. INTERFACE STREAMLIT
-# ==========================================
+# 5. Previsão
+horas = [[7]]
+previsao = modelo.predict(horas)
 
-st.set_page_config(
-    page_title="Previsão de Notas",
-    layout="centered"
-)
+# 6. Resultado
+print(f'Previsão de cansaço para 7 horas jogando: {previsao[0]:.2f}')
 
-st.title("Previsão de Notas com IA")
+# -------------------------------
+# REPRESENTAÇÃO DO GRÁFICO
+# -------------------------------
 
-st.write("""
-Aplicação de Machine Learning utilizando
-Regressão Linear com Scikit-learn.
-""")
+# Criando valores para a linha de regressão
+x_linha = np.linspace(1, 10, 100)
+y_linha = modelo.predict(x_linha.reshape(-1, 1))
 
-# ==========================================
-# 5. ENTRADA DE DADOS
-# ==========================================
-
-horas_estudo = st.slider(
-    "Horas de estudo",
-    min_value=1,
-    max_value=12,
-    value=6
-)
-
-# ==========================================
-# 6. PREVISÃO
-# ==========================================
-
-previsao = modelo.predict([[horas_estudo]])
-
-st.subheader("Resultado da previsão")
-
-st.success(
-    f"Nota prevista: {previsao[0]:.2f}"
-)
-
-# ==========================================
-# 7. INFORMAÇÕES DO MODELO
-# ==========================================
-
-st.subheader("Parâmetros do Modelo")
-
-st.write(f"Coeficiente Angular: {modelo.coef_[0]:.2f}")
-st.write(f"Intercepto: {modelo.intercept_:.2f}")
-
-# ==========================================
-# 8. LINHA DE REGRESSÃO
-# ==========================================
-
-# Gerando previsões
-estudos['previsao'] = modelo.predict(X)
-
-# ==========================================
-# 9. GRÁFICO COM PLOTLY
-# ==========================================
-
+# Gráfico interativo
 fig = px.scatter(
-    estudos,
-    x='horas',
-    y='notas',
-    title='Horas de Estudo x Notas',
+    gamer,
+    x='horas_jogo',
+    y='cansaco',
+    title='Relação entre Horas de Jogo e Cansaço',
     labels={
-        'horas': 'Horas de Estudo',
-        'notas': 'Notas'
+        'horas_jogo': 'Horas Jogando',
+        'cansaco': 'Nível de Cansaço'
     }
 )
 
-# Adiciona linha de regressão
+# Adicionando linha de regressão
 fig.add_scatter(
-    x=estudos['horas'],
-    y=estudos['previsao'],
+    x=x_linha,
+    y=y_linha,
     mode='lines',
-    name='Regressão Linear'
+    name='Linha de Regressão'
 )
 
-# Exibe gráfico
-st.plotly_chart(
-    fig,
-    use_container_width=True
-)
-
-# ==========================================
-# 10. EXIBIÇÃO DOS DADOS
-# ==========================================
-
-st.subheader("Base de Dados")
-
-st.dataframe(estudos)
+# Mostrar gráfico
+fig.show()
